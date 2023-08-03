@@ -108,20 +108,15 @@ function callJSONP(url) {
 
 //JSONPの結果として実行される関数
 function showResult( result ) {
-  let output = '';
-
-  console.log(result);
   
   if(result.ResultInfo.Count > 0){
 	let name = result.Feature[0].Name;
 	console.log(name);
-	output += "<h2>" + name + "</h2>";
 	
 	for(let i=0; i < result.Feature[0].Property.WeatherList.Weather.length; i++){
 		let weather_type = result.Feature[0].Property.WeatherList.Weather[i].Type;
 		let weather_date = result.Feature[0].Property.WeatherList.Weather[i].Date;
 		let weather_rainfall = result.Feature[0].Property.WeatherList.Weather[i].Rainfall;
-		output += weather_type + "/" + weather_date + "/" + weather_rainfall + "<br>";
 		
 		// 降水量でrain変数を設定
 		let rain = '';
@@ -130,12 +125,7 @@ function showResult( result ) {
 		} else {
 			rain = 0;
 		}
-	}
-  }else{
-  	output = "not found";
   }
-  resultOutput.innerHTML = output;
-  
 }
 
 if (!"SpeechSynthesisUtterance" in window) {
