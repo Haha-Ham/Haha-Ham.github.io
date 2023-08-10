@@ -24,6 +24,11 @@
 <div id="resultOutput"></div>
 </p>
 
+<audio id="Sound0" preload="auto">
+   <source src="0.mp3" type="audio/mp3">
+   <p>※お使いのブラウザでは音は鳴りません。</p>
+</audio>
+
 <audio id="Sound1" preload="auto">
    <source src="huhatsu.mp3" type="audio/mp3">
    <p>※お使いのブラウザでは音は鳴りません。</p>
@@ -85,6 +90,11 @@ var response = {
     "ホイミ": { text: "あなたはホイミをとなえた", audio: "Sound3", backgroundImage: "image3.jpg" },
 		"メラゾーマ": { text: "湿気でメラゾーマが出ない！", audio: "Sound4", backgroundImage: "image.jpg" },
 		"ヒャダイン": { text: "あなたはヒャダインをとなえた", audio: "Sound5", backgroundImage: "image5.jpg" },
+		"呪文を教えて": { text: "呪文は「メラ」「ヒャド」「メラゾーマ」「ヒャダイン」「ホイミ」の５つがあります。", audio: "Sound0", backgroundImage: "image.jpg" },
+		"呪文": { text: "呪文は「メラ」「ヒャド」「メラゾーマ」「ヒャダイン」「ホイミ」の５つがあります。", audio: "Sound0", backgroundImage: "image.jpg" },
+		"教えて": { text: "呪文は「メラ」「ヒャド」「メラゾーマ」「ヒャダイン」「ホイミ」の５つがあります。", audio: "Sound0", backgroundImage: "image.jpg" },
+		"知らない": { text: "呪文は「メラ」「ヒャド」「メラゾーマ」「ヒャダイン」「ホイミ」の５つがあります。", audio: "Sound0", backgroundImage: "image.jpg" },
+		"わからない": { text: "呪文は「メラ」「ヒャド」「メラゾーマ」「ヒャダイン」「ホイミ」の５つがあります。", audio: "Sound0", backgroundImage: "image.jpg" },
 };
 
 const startButton = document.querySelector('#startButton'); // 開始ボタン
@@ -142,6 +152,10 @@ asr.onresult = function(event){
             setTimeout(function() {
                 document.body.style.backgroundImage = `url("image.jpg")`; // 数秒後に背景画像を戻す
             }, 5000); // ミリ秒で指定する。必要に応じて調整
+					} else {
+					output += transcript + "=>" + "詠唱に失敗しました...。呪文を知らない場合は「呪文を教えて」と聞いてください。" + '<br>';
+					tts.text = "詠唱に失敗しました。呪文を知らない場合は「呪文を教えて」と聞いてください";
+					speechSynthesis.speak(tts); // 再生
         }
     } else { // 結果がまだ未確定のとき
         output_not_final = '<span style="color:#ddd;">' + transcript + '</span>';
