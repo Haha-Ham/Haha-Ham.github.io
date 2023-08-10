@@ -1,0 +1,177 @@
+<html lang="ja">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta http-equiv="Content-Script-Type" content="text/javascript">
+<title>Spoken Dialog by Javascript</title>
+</head>
+<body style="background-image: url('image.jpg'); background-size: cover; background-attachment: fixed; background-position: center center;">
+
+
+<h1>呪文をとなえよう！</h1>
+<h5><今日は良い天気だ..></h5>
+
+<div style="position: absolute; bottom: 10%; left: 40%; transform: translateX(-50%);">
+    <button id="startButton" style="font-size: 24px;">となえる</button>
+</div>
+<div style="position: absolute; bottom: 10%; left: 60%; transform: translateX(-50%);">
+		<button id="stopButton" style="font-size: 24px;">やめる</button>
+</div>
+
+
+<p>
+<div id="resultOutput"></div>
+</p>
+
+<audio id="Sound1" preload="auto">
+   <source src="mera.mp3" type="audio/mp3">
+   <p>※お使いのブラウザでは音は鳴りません。</p>
+</audio>
+
+<audio id="Sound2" preload="auto">
+   <source src="hyado.mp3" type="audio/mp3">
+   <p>※お使いのブラウザでは音は鳴りません。</p>
+</audio>
+
+<audio id="Sound3" preload="auto">
+   <source src="hoimi.mp3" type="audio/mp3">
+   <p>※お使いのブラウザでは音は鳴りません。</p>
+</audio>
+
+<audio id="Sound4" preload="auto">
+   <source src="merazo-ma.mp3" type="audio/mp3">
+   <p>※お使いのブラウザでは音は鳴りません。</p>
+</audio>
+
+<audio id="Sound5" preload="auto">
+   <source src="hyadain.mp3" type="audio/mp3">
+   <p>※お使いのブラウザでは音は鳴りません。</p>
+</audio>
+
+<style type="text/css">
+	body {
+		 background-image: url("image.jpg"); 
+		 background-size: cover;
+		 background-attachment: fixed;
+		 background-position: center;
+	}
+	h1 {
+	color: white;
+	}
+	h5 {
+	color: gray;
+	}
+	#resultOutput {
+		color: white;
+	}
+	#startButton {
+		background-color: black;
+		color: white;
+		border: 2px solid white;
+	}
+	#stopButton {
+		background-color: black;
+		color: white;
+		border: 2px solid white;
+	}
+</style>
+
+<script>
+<!-- 応答の定義（ハッシュ） -->  
+var response = {
+    "メラ": { text: "あなたはメラをとなえた", audio: "Sound1", backgroundImage: "image1.jpg" },
+    "ヒャド": { text: "あなたはヒャドをとなえた", audio: "Sound2", backgroundImage: "image2.jpg" },
+    "ホイミ": { text: "あなたはホイミをとなえた", audio: "Sound3", backgroundImage: "image3.jpg" },
+		"メラゾーマ": { text: "あなたはメラゾーマをとなえた", audio: "Sound4", backgroundImage: "image4.jpg" },
+		"ヒャダイン": { text: "あなたはヒャダインをとなえた", audio: "Sound5", backgroundImage: "image5.jpg" },
+};
+
+const startButton = document.querySelector('#startButton'); // 開始ボタン
+const stopButton = document.querySelector('#stopButton'); // 停止ボタン
+const resultOutput = document.querySelector('#resultOutput'); // 結果出力エリア
+
+if (!'SpeechSynthesisUtterance' in window) {
+    alert("あなたのブラウザはSpeech Synthesis APIに未対応です。");
+}
+const tts = new SpeechSynthesisUtterance(); // TTSインスタンスを生成
+tts.lang = "ja"; // 言語(日本語)、英語の場合はen-US
+tts.rate = 1.0; // 速度
+tts.pitch = 1.0; // 声の高さ
+tts.volume = 1.0; // 音量
+
+SpeechRecognition = webkitSpeechRecognition || SpeechRecognition;
+if (!'SpeechRecognition' in window) {
+    alert("あなたのブラウザはSpeech Recognition APIに未対応です。");
+}
+
+const asr = new SpeechRecognition(); // ASRインスタンスを生成
+asr.lang = "ja"; // 言語（日本語）
+asr.interimResults = true; // 途中結果出力をオン
+asr.continuous = true; // 継続入力をオン
+
+let output = ''; // 出力
+
+// 認識結果が出力されたときのイベントハンドラ
+asr.onresult = function(event){
+    let transcript = event.results[event.resultIndex][0].transcript; // 結果文字列
+
+    let output_not_final = '';
+    if (event.results[event.resultIndex].isFinal) { // 結果が確定（Final）のとき
+        asr.abort(); // 音声認識を停止
+        let responseObj = response[transcript];
+
+        if (responseObj !== undefined) {
+            let answer = responseObj.text;
+            let audioId = responseObj.audio;
+            let backgroundImage = responseObj.backgroundImage; // 背景画像を取得
+
+            document.body.style.backgroundImage = `url("${backgroundImage}")`; // 背景画像を設定
+
+            output += transcript + ' => ' + answer + '<br>';
+            playVoice(audioId);
+
+            tts.text = answer;
+
+            tts.onend = function(event){
+                asr.start();
+            }
+
+            speechSynthesis.speak(tts);
+
+            setTimeout(function() {
+                document.body.style.backgroundImage = `url("image.jpg")`; // 数秒後に背景画像を戻す
+            }, 5000); // ミリ秒で指定する。必要に応じて調整
+        }
+    } else { // 結果がまだ未確定のとき
+        output_not_final = '<span style="color:#ddd;">' + transcript + '</span>';
+        resultOutput.innerHTML = output + output_not_final;
+    }
+    resultOutput.innerHTML = output + output_not_final;
+}
+
+
+// 開始ボタンのイベントハンドラ
+startButton.addEventListener('click', function() {
+    asr.start();
+})
+
+// 停止ボタンのイベントハンドラ
+stopButton.addEventListener('click', function() {
+    asr.abort();
+    asr.stop();
+})
+
+// 音声ファイルを再生する関数
+function playVoice(id) {
+    isPlaying = true;
+    const audio = document.getElementById(id);
+    audio.onended = function() {
+        isPlaying = false;
+    };
+    audio.play();
+}
+</script>
+
+</body>
+</html>

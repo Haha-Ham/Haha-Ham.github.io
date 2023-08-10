@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -6,59 +7,23 @@
 <meta http-equiv="Content-Script-Type" content="text/javascript">
 <title>Spoken Dialog by Javascript</title>
 </head>
-<body background=“/img/image.jpg”>
+<body background="/img/image.jpg">
 
+<h1>スライムが現れた！</h1>
 
-<h1>呪文をとなえよう！</h1>
-
-<p>
-<button id="startButton">たたかう</button>
-<button id="stopButton">やめる</button>
-</p>
-
-<p>
-<div id="resultOutput"></div>
-</p>
-
-<audio id="Sound1" preload="auto">
-   <source src="mera.mp3" type="audio/mp3">
-   <p>※お使いのブラウザでは音は鳴りません。</p>
-</audio>
-
-<audio id="Sound2" preload="auto">
-   <source src="hyado.mp3" type="audio/mp3">
-   <p>※お使いのブラウザでは音は鳴りません。</p>
-</audio>
-
-<audio id="Sound3" preload="auto">
-   <source src="hoimi.mp3" type="audio/mp3">
-   <p>※お使いのブラウザでは音は鳴りません。</p>
-</audio>
-
-<audio id="Sound4" preload="auto">
-   <source src="merazo-ma.mp3" type="audio/mp3">
-   <p>※お使いのブラウザでは音は鳴りません。</p>
-</audio>
-
-<audio id="Sound5" preload="auto">
-   <source src="hyadain.mp3" type="audio/mp3">
-   <p>※お使いのブラウザでは音は鳴りません。</p>
-</audio>
-
-<audio id="Sound6" preload="auto">
-   <source src="hyadain.mp3" type="audio/mp3">
-   <p>※お使いのブラウザでは音は鳴りません。</p>
-</audio>
+<div style="position: absolute; bottom: 10%; left: 50%; transform: translateX(-50%);">
+    <button id="startButton" style="font-size: 24px;">たたかう</button>
+</div>
 
 <style type="text/css">
 	body {
-		 background-image: url("image.jpg"); 
-		 background-size: cover;
-		 background-attachment: fixed;
-		 background-position: center center;
+		background-image: url("image.jpg"); 
+		background-size: cover;
+		background-attachment: fixed;
+		background-position: center;
 	}
 	h1 {
-	color: white;
+		color: white;
 	}
 	#resultOutput {
 		color: white;
@@ -68,153 +33,59 @@
 		color: white;
 		border: 2px solid white;
 	}
-	#stopButton {
-		background-color: black;
-		color: white;
-		border: 2px solid white;
-	}
 </style>
 
 <script>
-// 応答の定義（ハッシュ）
-var response = {
-  "メラ": { text: "あなたはメラをとなえた", audio: "Sound1" },
-  "ヒャド": { text: "あなたはヒャドをとなえた", audio: "Sound2" },
-  "ホイミ": { text: "あなたはホイミをとなえた", audio: "Sound3" },
-  "メラゾーマ": { text: "あなたはメラゾーマをとなえた", audio: "Sound4" },
-  "ヒャダイン": { text: "あなたはヒャダインをとなえた", audio: "Sound5" },
-};
+<!--
+const startButton = document.querySelector('#startButton'); // 開始ボタン
 
-const startButton = document.querySelector("#startButton"); // 開始ボタン
-const stopButton = document.querySelector("#stopButton"); // 停止ボタン
-const resultOutput = document.querySelector("#resultOutput"); // 結果出力エリア
+// Yahoo! JAPANの天気情報の結果を格納する変数
+let weather_rainfall = 0;
 
+// 詠唱を開始する関数
+function startChant() {
+    showWeather();
+}
+
+// 開始ボタンのクリックイベントハンドラ
+startButton.addEventListener('click', startChant);
+
+// showWeather関数と関連するコードをここに追加する
 function showWeather() {
-  //var appid = 'あなたのアプリケーションID';
-  var appid = 'dj00aiZpPUE4Q3lhcWxXUXE1byZzPWNvbnN1bWVyc2VjcmV0Jng9MDU-';
-  var query = document.getElementById('query').value;
-  var url = "https://map.yahooapis.jp/weather/V1/place?appid=" + appid + "&coordinates=" + encodeURI( query ) + "&output=json&callback=showResult";
-  callJSONP( url );
+    var appid = 'dj00aiZpPUE4Q3lhcWxXUXE1byZzPWNvbnN1bWVyc2VjcmV0Jng9MDU-';
+    var coordinates = '135.17072987,34.23033837'; //和歌山のIPAドレスを設定している。
+    var url = "https://map.yahooapis.jp/weather/V1/place?appid=" + appid + "&coordinates=" + encodeURI(coordinates) + "&output=json&callback=showResult";
+    callJSONP(url);
 }
 
 //JSONPを実行する関数
 function callJSONP(url) {
-  console.log(url);
-  var target = document.createElement('script');
-  target.charset = 'utf-8';
-  target.src = url;
-  document.body.appendChild(target);
+    var target = document.createElement('script');
+    target.charset = 'utf-8';
+    target.src = url;
+    document.body.appendChild(target);
 }
 
 //JSONPの結果として実行される関数
-function showResult( result ) {
-  
-  if(result.ResultInfo.Count > 0){
-	let name = result.Feature[0].Name;
-	console.log(name);
-	
-	for(let i=0; i < result.Feature[0].Property.WeatherList.Weather.length; i++){
-		let weather_type = result.Feature[0].Property.WeatherList.Weather[i].Type;
-		let weather_date = result.Feature[0].Property.WeatherList.Weather[i].Date;
-		let weather_rainfall = result.Feature[0].Property.WeatherList.Weather[i].Rainfall;
-		
-		// 降水量でrain変数を設定
-		let rain = '';
-		if (weather_rainfall >= 0.8) {
-			rain = 1;
-		} else {
-			rain = 0;
-		}
-  }
-}
-
-if (!"SpeechSynthesisUtterance" in window) {
-  alert("あなたのブラウザはSpeech Synthesis APIに未対応です。");
-}
-const tts = new SpeechSynthesisUtterance(); // TTSインスタンスを生成
-tts.lang = "ja"; // 言語(日本語)、英語の場合はen-US
-tts.rate = 1.0; // 速度
-tts.pitch = 1.0; // 声の高さ
-tts.volume = 1.0; // 音量
-
-SpeechRecognition = webkitSpeechRecognition || SpeechRecognition;
-if (!"SpeechRecognition" in window) {
-  alert("あなたのブラウザはSpeech Recognition APIに未対応です。");
-}
-
-const asr = new SpeechRecognition(); // ASRインスタンスを生成
-asr.lang = "ja"; // 言語（日本語）
-asr.interimResults = true; // 途中結果出力をオン
-asr.continuous = true; // 継続入力をオン
-
-let output = ""; // 出力
-
-// 認識結果が出力されたときのイベントハンドラ
-asr.onresult = function (event) {
-  let transcript = event.results[event.resultIndex][0].transcript; // 結果文字列
-
-  let output_not_final = "";
-  if (event.results[event.resultIndex].isFinal) {
-    // 結果が確定（Final）のとき
-    asr.abort(); // 音声認識を停止
-    let responseObj = response[transcript];
-
-    if (responseObj !== undefined) {
-      let answer;
-      let audioId;
-      if (transcript === "メラ") {
-        if (rain == 0) {
-          answer = responseObj.text;
-          audioId = responseObj.audio;
-        } else if (rain == 1) {
-          answer = "雨のせいでメラは唱えられない";
-          audioId = "Sound6";
+function showResult(result) {
+    if (result.ResultInfo.Count > 0) {
+        let observationData = result.Feature[0].Property.WeatherList.Weather.find(weather => weather.Type === 'observation');
+        if (observationData) {
+            weather_rainfall = parseFloat(observationData.Rainfall);
+            if (weather_rainfall < 0.30) { //weather_rainfallの値によって画面が遷移する。調節可能
+                window.location.href = 'index1.html'; //比較的、晴れているとき
+            } else {
+                window.location.href = 'index2.html'; //比較的「、晴れていないとき
+            }
         }
-      } else {
-        answer = responseObj.text;
-        audioId = responseObj.audio;
-      }
-
-      output += transcript + " => " + answer + "<br>";
-
-      tts.text = answer;
-      // 再生が終了（end）ときのイベントハンドラ（終了したときに実行される）
-      tts.onend = function (event) {
-        asr.start(); // 音声認識を再開
-      };
-
-      playVoice(audioId);
-      speechSynthesis.speak(tts); // 再生
     }
-  } else {
-    // 結果がまだ未確定のとき
-    output_not_final = '<span style="color:#ddd;">' + transcript + "</span>";
-  }
-  resultOutput.innerHTML = output + output_not_final;
-};
-
-// 開始ボタンのイベントハンドラ
-startButton.addEventListener("click", function () {
-  asr.start();
-});
-
-// 停止ボタンのイベントハンドラ
-stopButton.addEventListener("click", function () {
-  asr.abort();
-  asr.stop();
-});
-
-// 音声ファイルを再生する関数
-function playVoice(id) {
-  isPlaying = true;
-  const audio = document.getElementById(id);
-  audio.onended = function () {
-    isPlaying = false;
-  };
-  audio.play();
 }
+-->
 </script>
 
-
+<!-- Yahoo!JAPANのAPIを利用したときはクレジット表記が必要 -->
+<p>
+Web Services by Yahoo! JAPAN （https://developer.yahoo.co.jp/sitemap/）
+</p>
 </body>
 </html>
